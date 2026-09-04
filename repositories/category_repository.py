@@ -116,3 +116,26 @@ def restore_category(category_id: int) -> bool:
         return cursor.rowcount > 0
     finally:
         connection.close()
+
+def get_category_by_name(name:str) -> Category | None:
+    connection = get_connection()
+    try:
+        cursor = connection.execute(
+            """
+            SELECT id, name, description, is_deleted, created_at
+            FROM categories
+            WHERE name = ?""",
+            (name,)
+        )
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        return Category(
+            id=row[0],
+            name=row[1],
+            description=row[2],
+            is_deleted=bool(row[3]),
+            created_at=row[4],
+        )
+    finally:
+        connection.close()
