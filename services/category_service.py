@@ -74,5 +74,12 @@ def restore_category(category_id: int) -> None:
         raise ValueError('Category does not exist')
 
 
+def get_deleted_categories() -> list[Category]:
+    deleted_categories = []
+    for category in category_repository.get_deleted_categories():
+        deleted_categories.append(category)
+    return deleted_categories
+
+
 
 

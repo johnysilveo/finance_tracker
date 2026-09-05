@@ -22,7 +22,7 @@ def get_category_by_id(category_id: int) -> Category | None:
     try:
         cursor = connection.execute(
             """
-            SELECT id, name, description, is_deleted, created_at
+            SELECT id, name, description, is_deleted, created_at, updated_at
             FROM categories
             WHERE id = ? AND is_deleted = 0
             """,
@@ -37,6 +37,7 @@ def get_category_by_id(category_id: int) -> Category | None:
             description=row[2],
             is_deleted=bool(row[3]),
             created_at=row[4],
+            updated_at=row[5]
         )
     finally:
         connection.close()
@@ -46,7 +47,7 @@ def get_all_categories() -> list[Category]:
     try:
         cursor = connection.execute(
             """
-            SELECT id, name, description, is_deleted, created_at
+            SELECT id, name, description, is_deleted, created_at, updated_at
             FROM categories
             WHERE is_deleted = 0
             ORDER BY id
@@ -60,7 +61,8 @@ def get_all_categories() -> list[Category]:
                 name=row[1],
                 description=row[2],
                 is_deleted=bool(row[3]),
-                created_at=row[4]
+                created_at=row[4],
+                updated_at=row[5],
             )
             categories.append(category)
         return categories
@@ -73,7 +75,8 @@ def update_category(category: Category) -> bool:
         cursor = connection.execute(
             """
             UPDATE categories
-            SET name = ?, description = ?
+            SET name = ?, description = ?,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND is_deleted = 0
             """,
             (category.name,
@@ -91,7 +94,8 @@ def soft_delete_category(category_id: int) -> bool:
         cursor = connection.execute(
             """
             UPDATE categories
-            SET is_deleted = 1
+            SET is_deleted = 1,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND is_deleted = 0
             """,
             (category_id,)
@@ -107,7 +111,8 @@ def restore_category(category_id: int) -> bool:
         cursor = connection.execute(
             """
             UPDATE categories
-            SET is_deleted = 0
+            SET is_deleted = 0,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND is_deleted = 1
             """,
             (category_id,)
@@ -122,7 +127,7 @@ def get_category_by_name(name:str) -> Category | None:
     try:
         cursor = connection.execute(
             """
-            SELECT id, name, description, is_deleted, created_at
+            SELECT id, name, description, is_deleted, created_at, updated_at
             FROM categories
             WHERE name = ?""",
             (name,)
@@ -136,6 +141,35 @@ def get_category_by_name(name:str) -> Category | None:
             description=row[2],
             is_deleted=bool(row[3]),
             created_at=row[4],
+            updated_at=row[5]
         )
+    finally:
+        connection.close()
+
+
+def get_deleted_categories() -> list[Category]:
+    connection = get_connection()
+    try:
+        cursor = connection.execute(
+            """
+            SELECT id, name, description, is_deleted, created_at, updated_at
+            FROM categories
+            WHERE is_deleted = 1
+            ORDER BY id
+            """
+        )
+        rows = cursor.fetchall()
+        deleted_categories = []
+        for row in rows:
+            category = Category(
+                id=row[0],
+                name=row[1],
+                description=row[2],
+                is_deleted=bool(row[3]),
+                created_at=row[4],
+                updated_at=row[5]
+            )
+            deleted_categories.append(category)
+        return deleted_categories
     finally:
         connection.close()

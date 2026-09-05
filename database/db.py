@@ -20,7 +20,8 @@ def init_db():
             name TEXT NOT NULL UNIQUE,
             description TEXT,
             is_deleted INTEGER DEFAULT 0,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
 

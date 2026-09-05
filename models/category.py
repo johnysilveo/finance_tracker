@@ -8,3 +8,4 @@ class Category:
     id: int | None = None
     is_deleted: bool = False
     created_at: str | None = None
+    updated_at: str | None = None

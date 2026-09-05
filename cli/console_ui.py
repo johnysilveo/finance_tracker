@@ -25,3 +25,6 @@ def centered_input(prompt: str) -> str:
         "|" + " " * padding + prompt
     ).strip()
 
+def wait_for_enter():
+    centered_input("press ENTER to continue")
+
