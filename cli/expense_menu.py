@@ -6,10 +6,7 @@ from datetime import datetime
 
 def expense_menu():
     while True:
-        print(border())
-        print(centered())
-        print(centered("EXPENSE MENU"))
-        print(centered())
+        show_header("EXPENSE MENU")
         print(centered("1. Add expense"))
         print(centered("2. Show all expenses"))
         print(centered("3. Update expense"))
@@ -57,12 +54,13 @@ def add_expense():
     for category in categories:
         print(centered(f"{category.id}. {category.name}"))
     print(centered())
+    category_id = centered_input("Enter category ID")
     name = centered_input("Enter expense name")
     description = centered_input("Enter expense description")
-    category_id = centered_input("Enter category ID")
     amount = centered_input("Enter expense amount")
-    date = centered_input("Enter expense date MM/DD/YYYY")
     currency = centered_input("Enter currency (default USD)")
+    date = centered_input("Enter expense date MM/DD/YYYY")
+
     try:
         category_id = int(category_id)
         amount = Decimal(amount)
@@ -351,4 +349,3 @@ def show_deleted_expenses():
         print(centered())
 
 
-expense_menu()
