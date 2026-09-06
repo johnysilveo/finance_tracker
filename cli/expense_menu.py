@@ -31,8 +31,18 @@ def expense_menu():
             show_all_expenses()
         elif choice == "3":
             update_expense()
+        elif choice == "4":
+            delete_expense()
+        elif choice == "5":
+            restore_expense()
+        elif choice == "6":
+            show_expense_details()
+        elif choice == "7":
+            show_deleted_expenses()
+        else:
+            print(centered("INVALID!!!!!!!!!!!!!!!!!!!"))
 
-    wait_for_enter()
+        wait_for_enter()
 
 
 def add_expense():
@@ -82,19 +92,17 @@ def add_expense():
 def show_all_expenses():
     show_header("SHOW EXPENSES")
     expenses = expense_service.get_all_expenses()
-
     if not expenses:
         print(centered("No expenses found."))
     else:
         for expense in expenses:
             amount = expense.amount_cents / 100
-            display_date = datetime.strptime(expense.date, "%Y/%m/%d").strftime("%m/%d/%Y")
+            display_date = datetime.strptime(expense.date, "%Y-%m-%d").strftime("%m/%d/%Y")
             try:
                 category = category_service.get_category_by_id(expense.category_id)
                 category_name = category.name
             except ValueError:
                 category_name = "Deleted category"
-
             print(centered(f"ID: {expense.id}. Name: {expense.name}"))
             print(centered(f"Category: {category_name}"))
             print(centered(f"Amount: {amount:.2f} {expense.currency}"))
@@ -122,7 +130,7 @@ def update_expense():
         print(centered())
         print(centered(f"Current date: {existing_expense.date}"))
         print(centered(
-            f"Current description: {existing_expense.description or '-'}"
+            f"Current description: {existing_expense.description or 'None'}"
         ))
     except ValueError as error:
         print(centered(f"Error: {error}"))
@@ -142,7 +150,7 @@ def update_expense():
         f"Enter new name [{existing_expense.name}]"
     )
     description = centered_input(
-        f"Enter new description [{existing_expense.description or '-'}]"
+        f"Enter new description [{existing_expense.description or 'None'}]"
     )
     category_id = centered_input(
         f"Enter new category ID [{existing_expense.category_id}]"
@@ -192,3 +200,155 @@ def update_expense():
     except (ValueError, InvalidOperation) as error:
         print(centered())
         print(centered(f"Error: {error}"))
+
+
+def delete_expense():
+    show_header("DELETE EXPENSES")
+    expenses = expense_service.get_all_expenses()
+    if not expenses:
+        print(centered("No expenses found."))
+        return
+    for expense in expenses:
+        amount = expense.amount_cents / 100
+        print(centered(
+            f"ID: {expense.id}. Name: {expense.name} - "
+            f"Amount: {amount:.2f} {expense.currency}"
+        ))
+    print(centered())
+    try:
+        expense_id = int(centered_input("Enter expense ID"))
+        existing_expense = expense_service.get_expense_by_id(expense_id)
+        print(centered())
+        print(centered(f"Current date: {existing_expense.date}"))
+        print(centered(
+            f"Current description: {existing_expense.description or 'None'}"
+        ))
+    except ValueError as error:
+        print(centered(f"Error: {error}"))
+        return
+    try:
+        confirmation = centered_input("Are you sure? (y/n)").lower()
+        if confirmation != "y":
+            print(centered("Delete cancelled"))
+            print(centered())
+            print(border())
+            return
+        else:
+            expense_service.delete_expense(expense_id)
+            print(centered())
+            print(centered("Expense deleted successfully"))
+            print(centered())
+    except ValueError as e:
+        print(centered())
+        print(centered(f"Error: {e}"))
+        print(centered())
+    print(border())
+
+
+def restore_expense():
+    show_header("RESTORE EXPENSES")
+    expenses = expense_service.get_deleted_expenses()
+    if not expenses:
+        print(centered("No expenses found."))
+        return
+    for expense in expenses:
+        amount = expense.amount_cents / 100
+        print(centered(
+            f"ID: {expense.id}. Name: {expense.name} - "
+            f"Amount: {amount:.2f} {expense.currency}"
+        ))
+    print(centered())
+    try:
+        expense_id = int(centered_input("Enter expense ID"))
+        existing_expense = None
+        for expense in expenses:
+            if expense.id == expense_id:
+                existing_expense = expense
+                break
+        if existing_expense is None:
+            raise ValueError("Deleted expense not found.")
+        print(centered())
+        print(centered(f"Current date: {existing_expense.date}"))
+        print(centered(
+            f"Current description: {existing_expense.description or 'None'}"
+        ))
+    except ValueError as error:
+        print(centered(f"Error: {error}"))
+        return
+    try:
+        confirmation = centered_input("Are you sure? (y/n)").lower()
+        if confirmation != "y":
+            print(centered("Restoration cancelled"))
+            print(centered())
+            print(border())
+            return
+        else:
+            expense_service.restore_expense(expense_id)
+            print(centered())
+            print(centered("Expense restored successfully"))
+            print(centered())
+    except ValueError as e:
+        print(centered())
+        print(centered(f"Error: {e}"))
+        print(centered())
+    print(border())
+
+
+def show_expense_details():
+    show_header("SHOW EXPENSES DETAILS")
+    expenses = expense_service.get_all_expenses()
+    if not expenses:
+        print(centered("No expenses found."))
+        return
+    for expense in expenses:
+        amount = expense.amount_cents / 100
+        print(centered(
+            f"ID: {expense.id}. Name: {expense.name} - "
+            f"Amount: {amount:.2f} {expense.currency}"
+        ))
+    print(centered())
+    try:
+        expense_id = int(centered_input("Enter expense ID"))
+        existing_expense = expense_service.get_expense_by_id(expense_id)
+
+    except ValueError as error:
+        print(centered(f"Error: {error}"))
+        return
+    try:
+        category = category_service.get_category_by_id(existing_expense.category_id)
+        category_name = category.name
+    except ValueError:
+        category_name = "Deleted category"
+
+    amount = existing_expense.amount_cents / 100
+    display_date = datetime.strptime(existing_expense.date, "%Y-%m-%d").strftime("%m/%d/%Y")
+    print(centered())
+    print(centered(f"ID: {existing_expense.id}"))
+    print(centered(f"Name: {existing_expense.name}"))
+    print(centered(f"Category: {category_name}"))
+    print(centered(f"Amount: {amount:.2f} {existing_expense.currency}"))
+    print(centered(f"Date: {display_date}"))
+    print(centered(f"Description: {existing_expense.description or 'None'}"))
+    print(centered(f"Created at: {existing_expense.created_at}"))
+    print(centered(f"Updated at: {existing_expense.updated_at}"))
+
+
+def show_deleted_expenses():
+    show_header("DELETED EXPENSES")
+    expenses = expense_service.get_deleted_expenses()
+    if not expenses:
+        print(centered("No expenses found."))
+        return
+    for expense in expenses:
+        amount = expense.amount_cents / 100
+        display_date = datetime.strptime(expense.date, "%Y-%m-%d").strftime("%m/%d/%Y")
+        print(centered(
+            f"ID: {expense.id}. Name: {expense.name} - "
+            f"Amount: {amount:.2f} {expense.currency}"
+        ))
+        print(centered(f"Date: {display_date}"))
+        print(centered(f"Description: {expense.description or 'None'}"))
+        print(centered())
+
+
+expense_menu()
