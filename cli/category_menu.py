@@ -1,14 +1,10 @@
 from services import category_service
-from cli.console_ui import border, centered, centered_input, wait_for_enter
-
+from cli.console_ui import border, centered, centered_input, wait_for_enter, show_header
 
 
 def category_menu():
     while True:
-        print(border())
-        print(centered())
-        print(centered("CATEGORIES"))
-        print(centered())
+        show_header("CATEGORIES")
         print(centered("1. Add category"))
         print(centered("2. Show all categories "))
         print(centered("3. Update category"))
@@ -45,10 +41,7 @@ def category_menu():
 
 
 def add_category():
-    print(border())
-    print(centered())
-    print(centered("ADD CATEGORY"))
-    print(centered())
+    show_header("ADD CATEGORY")
 
     name = centered_input("Enter category name")
     description = centered_input("Enter category description (optional)")
@@ -68,10 +61,7 @@ def add_category():
 
 
 def show_all_categories():
-    print(border())
-    print(centered())
-    print(centered("ALL CATEGORIES"))
-    print(centered())
+    show_header("ALL CATEGORIES")
     categories = category_service.get_all_categories()
     if not categories:
         print(centered("No categories found"))
@@ -83,10 +73,7 @@ def show_all_categories():
 
 
 def update_category():
-    print(border())
-    print(centered())
-    print(centered("UPDATE CATEGORY"))
-    print(centered())
+    show_header("UPDATE CATEGORY")
 
     categories = category_service.get_all_categories()
 
@@ -127,10 +114,7 @@ def update_category():
 
 
 def delete_category():
-    print(border())
-    print(centered())
-    print(centered("DELETE CATEGORY"))
-    print(centered())
+    show_header("DELETE CATEGORY")
 
     categories = category_service.get_all_categories()
 
@@ -204,10 +188,7 @@ def restore_category():
 
 
 def show_category_details():
-    print(border())
-    print(centered())
-    print(centered("SHOW CATEGORY DETAILS"))
-    print(centered())
+    show_header("SHOW CATEGORY DETAILS")
 
     categories = category_service.get_all_categories()
 
