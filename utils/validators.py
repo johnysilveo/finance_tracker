@@ -126,3 +126,17 @@ def get_valid_date_range(start_prompt: str, end_prompt: str) -> tuple[str,str]:
         if parsed_start_date <= parsed_end_date:
             return start_date,end_date
         print(centered("Error: Start date must be before end date"))
+
+
+
+def get_valid_number(prompt: str, min_value: int, max_value: int) -> int:
+    while True:
+        value = get_input(prompt)
+        if not value.isdigit():
+            print(centered("Error: Value must be a number"))
+            continue
+        number = int(value)
+        if number < min_value or number > max_value:
+            print(centered(f"Error: Value must be from {min_value} to {max_value}"))
+            continue
+        return number

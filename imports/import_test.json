@@ -1,0 +1,98 @@
+[
+    {
+        "name": "Walmart Test",
+        "category": "Groceries",
+        "amount": 84.55,
+        "currency": "USD",
+        "date": "03/05/2026",
+        "description": "Test grocery import"
+    },
+    {
+        "name": "Dinner Test",
+        "category": "Restaurants",
+        "amount": 42.3,
+        "currency": "USD",
+        "date": "03-18-2026",
+        "description": "Test restaurant import"
+    },
+    {
+        "name": "Shell Test",
+        "category": "Fuel",
+        "amount": 67.9,
+        "currency": "USD",
+        "date": "04.02.2026",
+        "description": "Test fuel import"
+    },
+    {
+        "name": "Hotel Test",
+        "category": "Hotels",
+        "amount": 189.99,
+        "currency": "EUR",
+        "date": "04/20/2026",
+        "description": "Test hotel import"
+    },
+    {
+        "name": "Movies Test",
+        "category": "Entertainment",
+        "amount": 36.0,
+        "currency": "USD",
+        "date": "05-03-2026",
+        "description": "Test entertainment import"
+    },
+    {
+        "name": "Oil Change Test",
+        "category": "Car maintenance",
+        "amount": 119.5,
+        "currency": "USD",
+        "date": "05/22/2026",
+        "description": "Test maintenance import"
+    },
+    {
+        "name": "Amazon Test",
+        "category": "Shopping",
+        "amount": 156.75,
+        "currency": "EUR",
+        "date": "06.10.2026",
+        "description": "Test shopping import"
+    },
+    {
+        "name": "Verizon Test",
+        "category": "Phone/Home Internet",
+        "amount": 95.0,
+        "currency": "USD",
+        "date": "06/25/2026",
+        "description": "Test phone import"
+    },
+    {
+        "name": "Auto Loan Test",
+        "category": "Lease/Auto Loan",
+        "amount": 625.0,
+        "currency": "USD",
+        "date": "07-01-2026",
+        "description": "Test auto loan import"
+    },
+    {
+        "name": "Rent Test",
+        "category": "Rent/Mortgage",
+        "amount": 1850.0,
+        "currency": "USD",
+        "date": "07/05/2026",
+        "description": "Test rent import"
+    },
+    {
+        "name": "Spotify Test",
+        "category": "Subscriptions",
+        "amount": 11.99,
+        "currency": "EUR",
+        "date": "08.12.2026",
+        "description": "Test subscription import"
+    },
+    {
+        "name": "Misc Test",
+        "category": "Uncategorized",
+        "amount": 250.0,
+        "currency": "UAH",
+        "date": "2026-09-01",
+        "description": "Test uncategorized import"
+    }
+]

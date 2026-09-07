@@ -3,6 +3,7 @@ import time
 from decimal import Decimal, ROUND_HALF_UP
 from urllib.error import URLError
 from urllib.request import Request, urlopen
+from utils.logger import logger
 
 
 MONOBANK_HOST = "api.monobank.ua"
@@ -32,16 +33,19 @@ def get_currency_rates() -> list[dict]:
         headers={"User-Agent": "FinanceTracker/1.0"}
     )
     try:
-        with urlopen(request, timeout=5) as response:
+        with urlopen(request,timeout=5) as response:
             data = json.load(response)
-    except (URLError, TimeoutError, json.JSONDecodeError) as error:
+    except (URLError,TimeoutError,json.JSONDecodeError) as error:
+        logger.error(f"Monobank currency request failed: {error}")
         raise ConnectionError(
             "Could not load currency rates from Monobank"
         ) from error
-    if not isinstance(data, list):
+    if not isinstance(data,list):
+        logger.error("Invalid currency data received from Monobank")
         raise ValueError("Invalid currency data received from Monobank")
     _rates_cache = data
     _rates_cache_time = current_time
+    logger.info(f"Currency rates loaded from Monobank: {len(data)} rates")
     return data
 
 
@@ -63,6 +67,7 @@ def get_currency_rate(
             and rate.get("currencyCodeB") == UAH_CODE
         ):
             return rate
+    logger.error(f"Currency rate for {currency} was not found")
     raise ValueError(
         f"Currency rate for {currency} was not found"
     )
@@ -88,6 +93,7 @@ def get_reference_rate(rate: dict) -> Decimal:
         return Decimal(str(rate_buy))
     if rate_sell is not None and rate_sell > 0:
         return Decimal(str(rate_sell))
+    logger.error("Invalid currency rate data")
     raise ValueError("Invalid currency rate")
 
 
@@ -145,6 +151,3 @@ def convert_currency(
         rounding=ROUND_HALF_UP
     )
     return int(converted_cents)
-
-
-
