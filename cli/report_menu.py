@@ -1,7 +1,11 @@
 from services import report_service, category_service
+from services.export_service import export_report_csv, export_report_json
+from services.report_storage import get_last_report
 from cli.console_ui import (border,centered,centered_input,wait_for_enter,show_header)
+from cli.custom_report_menu import build_custom_report
 from datetime import datetime
-from utils.validators import (get_valid_id,get_valid_name,get_valid_currency,get_valid_date,PreviousField,CancelOperation)
+from utils.validators import (get_valid_id,get_valid_name,get_valid_currency,get_valid_date,get_input,PreviousField,CancelOperation)
+
 
 
 
@@ -53,9 +57,9 @@ def report_menu():
         elif choice == "11":
             average_daily_expense()
         elif choice == "12":
-            print(centered("Custom report is not implemented yet"))
+            build_custom_report()
         elif choice == "13":
-            print(centered("Export is not implemented yet"))
+            export_last_report()
         else:
             print(centered("INVALID OPTION"))
 
@@ -531,3 +535,65 @@ def average_daily_expense():
         print(centered(f"Error: {error}"))
         print(centered())
     print(border())
+
+
+
+def export_last_report():
+    show_header("EXPORT LAST REPORT")
+    report = get_last_report()
+    if report is None:
+        print(centered("No report available for export"))
+        print(centered())
+        print(centered("Build a custom report first"))
+        print(centered())
+        print(border())
+        return
+    print(centered("1. Export CSV"))
+    print(centered("2. Export JSON"))
+    print(centered("3. Export CSV and JSON"))
+    print(centered())
+    print(border())
+    print(centered())
+    while True:
+        try:
+            choice = get_input("Choose export format")
+            # The same saved report can be exported into one or both supported formats.
+            if choice == "1":
+                file_path = export_report_csv(report)
+                print(centered())
+                print(centered("CSV export completed successfully"))
+                print(centered())
+                print(centered(str(file_path)))
+                print(centered())
+                break
+            elif choice == "2":
+                file_path = export_report_json(report)
+                print(centered())
+                print(centered("JSON export completed successfully"))
+                print(centered())
+                print(centered(str(file_path)))
+                print(centered())
+                break
+            elif choice == "3":
+                csv_path = export_report_csv(report)
+                json_path = export_report_json(report)
+                print(centered())
+                print(centered("CSV and JSON export completed successfully"))
+                print(centered())
+                print(centered(f"CSV: {csv_path}"))
+                print(centered(f"JSON: {json_path}"))
+                print(centered())
+                break
+            else:
+                print(centered("Error: Choose 1, 2 or 3"))
+                print(centered())
+        # B or X safely returns to the Reports menu without creating a file.
+        except (PreviousField, CancelOperation):
+            print(centered())
+            print(centered("Export cancelled"))
+            print(centered())
+            break
+    print(border())
+
+
+

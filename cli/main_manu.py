@@ -2,6 +2,8 @@ from cli.console_ui import border, centered, centered_input, show_header
 from cli.category_menu import category_menu
 from cli.expense_menu import expense_menu
 from cli.report_menu import report_menu
+from cli.import_menu import import_menu
+
 
 
 
@@ -27,5 +29,7 @@ def main_menu():
             expense_menu()
         elif choice == "3":
             report_menu()
+        elif choice == "4":
+            import_menu()
         else:
             print(centered("FUCKING INVALID!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
