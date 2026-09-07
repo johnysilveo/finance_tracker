@@ -1,17 +1,40 @@
+import re
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from cli.console_ui import centered, centered_input
 from services.currency_service import CURRENCY_CODES
 
 
-# Keeps asking until the user enters a valid positive integer ID.
-# An optional lookup function can also verify that the object exists.
-def get_valid_id(prompt: str, lookup_function=None) -> int:
+class CancelOperation(Exception):
+    pass
+
+
+class PreviousField(Exception):
+    pass
+
+
+def get_input(prompt: str, allow_back: bool=True) -> str:
+    value = centered_input(f"{prompt} [B=Back, X=Cancel]").strip()
+    if value.lower() == "x":
+        raise CancelOperation
+    if allow_back and value.lower() == "b":
+        raise PreviousField
+    return value
+
+
+def get_valid_id(prompt: str, lookup_function=None, default: int | None=None) -> int:
     while True:
+        value = get_input(prompt)
+        if not value and default is not None:
+            return default
+        if not value.isdigit():
+            print(centered("Error: ID must be digit"))
+            continue
+        item_id = int(value)
+        if item_id <= 0:
+            print(centered("Error: ID must be greater than zero"))
+            continue
         try:
-            item_id = int(centered_input(prompt))
-            if item_id <= 0:
-                raise ValueError("ID must be greater than zero")
             if lookup_function is not None:
                 item = lookup_function(item_id)
                 if item is None:
@@ -21,31 +44,29 @@ def get_valid_id(prompt: str, lookup_function=None) -> int:
             print(centered(f"Error: {error}"))
 
 
-# Keeps asking until the user enters a non-empty name.
-# Only the first character is converted to uppercase.
-def get_valid_name(prompt: str) -> str:
+def get_valid_name(prompt: str, default: str | None=None) -> str:
     while True:
-        name = centered_input(prompt).strip()
+        name = get_input(prompt)
+        if not name and default is not None:
+            return default
         if not name:
             print(centered("Error: Name cannot be empty"))
             continue
         return name[:1].upper() + name[1:]
 
 
-# Description is optional and returns None when the user leaves it empty.
-# If entered, only the first character is converted to uppercase.
-def get_description(prompt: str) -> str | None:
-    description = centered_input(prompt).strip()
+def get_description(prompt: str, default: str | None=None) -> str | None:
+    description = get_input(prompt)
     if not description:
-        return None
+        return default
     return description[:1].upper() + description[1:]
 
 
-# Keeps asking until the user enters a positive amount with maximum two decimal places.
-# Returns integer cents so money is never stored as a floating-point number.
-def get_valid_amount_cents(prompt: str) -> int:
+def get_valid_amount_cents(prompt: str, default: int | None=None) -> int:
     while True:
-        amount_text = centered_input(prompt).strip()
+        amount_text = get_input(prompt).strip()
+        if not amount_text and default is not None:
+            return default
         try:
             amount = Decimal(amount_text)
             if amount <= 0:
@@ -59,26 +80,49 @@ def get_valid_amount_cents(prompt: str) -> int:
             print(centered(f"Error: {error}"))
 
 
-# Keeps asking until the user enters one of the supported currencies.
-# Empty input uses USD as the default currency.
-def get_valid_currency(prompt: str) -> str:
+def get_valid_currency(prompt: str, default: str | None=None) -> str:
     while True:
-        currency = centered_input(prompt).strip().upper()
-        if not currency:
-            return "USD"
+        currency = get_input(prompt).strip().upper()
+        if not currency and default is not None:
+            return default.strip().upper()
         if currency not in CURRENCY_CODES:
             print(centered("Error: Currency must be USD, EUR, or UAH"))
             continue
         return currency
 
 
-# Keeps asking until the user enters a real date.
-# Accepts values like 3/5/2026 and normalizes them to 03/05/2026.
-def get_valid_date(prompt: str) -> str:
+def get_valid_date(prompt: str, default: str | None=None) -> str:
     while True:
-        date = centered_input(prompt).strip()
+        date = get_input(prompt)
+        if not date and default is not None:
+            return default
+        date = re.sub(r"[.,'\-]+","/",date)
+        parts = date.split("/")
+        if len(parts) != 3:
+            print(centered("Error: Enter month, day and year"))
+            continue
+        month,day,year = parts
+        if not month.isdigit() or not day.isdigit() or not year.isdigit():
+            print(centered("Error: Date must contain numbers"))
+            continue
+        if len(year) <= 2:
+            year = str(2000 + int(year))
+        if len(year) != 4:
+            print(centered("Error: Year must contain 1, 2 or 4 digits"))
+            continue
         try:
-            parsed_date = datetime.strptime(date,"%m/%d/%Y")
+            parsed_date = datetime(int(year),int(month),int(day))
             return parsed_date.strftime("%m/%d/%Y")
         except ValueError:
-            print(centered("Error: Date must be in format MM/DD/YYYY"))
+            print(centered("Error: Invalid date"))
+
+
+def get_valid_date_range(start_prompt: str, end_prompt: str) -> tuple[str,str]:
+    while True:
+        start_date = get_valid_date(start_prompt)
+        end_date = get_valid_date(end_prompt)
+        parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
+        parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+        if parsed_start_date <= parsed_end_date:
+            return start_date,end_date
+        print(centered("Error: Start date must be before end date"))

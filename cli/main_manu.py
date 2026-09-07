@@ -15,8 +15,9 @@ def main_menu():
         print(centered("0. Exit"))
         print(centered())
         print(border())
-
+        print(centered())
         choice = centered_input("Choose option")
+        print(centered())
 
         if choice == "0":
             break
