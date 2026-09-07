@@ -2,6 +2,8 @@ from services import expense_service, category_service
 from cli.console_ui import border, centered, centered_input, wait_for_enter, show_header
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
+from utils.validators import (get_valid_id,get_valid_name,get_description,get_valid_amount_cents,get_valid_currency,get_valid_date,)
+
 
 
 def expense_menu():
@@ -54,12 +56,25 @@ def add_expense():
     for category in categories:
         print(centered(f"{category.id}. {category.name}"))
     print(centered())
-    category_id = centered_input("Enter category ID")
-    name = centered_input("Enter expense name")
-    description = centered_input("Enter expense description")
-    amount = centered_input("Enter expense amount")
-    currency = centered_input("Enter currency (default USD)")
-    date = centered_input("Enter expense date MM/DD/YYYY")
+    print(border())
+    while True:
+        try:
+            category_id = int(centered_input("Enter category ID"))
+            category = category_service.get_category_by_id(category_id)
+            break
+        except ValueError as error:
+            print(centered(f"ERROR!!!! {error}"))
+    name = get_valid_name("Enter expense name")
+    description = get_description("Enter expense description")
+    amount = get_valid_amount_cents("Enter expense amount")
+    currency = get_valid_currency("Enter currency just hit 'ENTER' for (default USD)")
+    while True:
+        date = centered_input("Enter date MM/DD/YYYY")
+        try:
+            datetime.strptime(date, "%m/%d/%Y")
+            break
+        except ValueError:
+            print(centered("Error: Date must be in format MM/DD/YYYY"))
 
     try:
         category_id = int(category_id)
@@ -109,6 +124,15 @@ def show_all_expenses():
             print(centered())
 
 
+# category_id = get_valid_id("Enter category ID",category_service.get_category_by_id)
+# name = get_valid_name("Enter expense name")
+# description = get_description("Enter expense description")
+# amount_cents = get_valid_amount_cents("Enter expense amount")
+# currency = get_valid_currency("Enter currency just hit 'ENTER' for (default USD)")
+# date = get_valid_date("Enter date MM/DD/YYYY")
+
+
+
 def update_expense():
     show_header("UPDATE EXPENSES")
     expenses = expense_service.get_all_expenses()
@@ -122,8 +146,9 @@ def update_expense():
             f"Amount: {amount:.2f} {expense.currency}"
         ))
     print(centered())
+    print(border())
     try:
-        expense_id = int(centered_input("Enter expense ID"))
+        expense_id =  get_valid_id("Enter expense ID",expense_service.get_expense_by_id)
         existing_expense = expense_service.get_expense_by_id(expense_id)
         print(centered())
         print(centered(f"Current date: {existing_expense.date}"))
