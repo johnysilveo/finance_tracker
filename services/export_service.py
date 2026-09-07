@@ -2,7 +2,7 @@ import csv
 import json
 from datetime import datetime
 from pathlib import Path
-
+from utils.logger import logger
 
 
 EXPORT_DIR = Path(__file__).resolve().parent.parent / "exports"
@@ -25,6 +25,7 @@ def export_report_json(report: dict) -> Path:
     file_path = create_export_filename("json")
     with open(file_path,"w",encoding="utf-8") as file:
         json.dump(report,file,indent=4,ensure_ascii=False)
+    logger.info(f"Report exported to JSON: {file_path}")
     return file_path
 
 
@@ -67,5 +68,5 @@ def export_report_csv(report: dict) -> Path:
                     display_line,
                     json.dumps(data,ensure_ascii=False)
                 ])
+    logger.info(f"Report exported to CSV: {file_path}")
     return file_path
-
