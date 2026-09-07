@@ -1,29 +1,157 @@
-from database.db import DB_path
-import sqlite3
+from database.db import get_connection, init_db
+import random
+from datetime import date
 
-
-
-conn = sqlite3.connect(DB_path)
 
 categories = [
-    ("Groceries", "Food and household products"),
-    ("Restaurants", "Food and drinks"),
-    ("Fuel", "Car gas"),
-    ("Hotels", "Staying expenses"),
-    ("Entertainment", "Movies, amusement parks, etc."),
-    ("Car maintenance", "Oil changes, repairs, and other car-related expenses"),
-    ("Shopping", "Leisure shopping expenses"),
-    ("Phone/Home Internet", "Home internet and cellular bills"),
-    ("Lease/Auto Loan", "Monthly car lease or auto loan payments"),
-    ("Rent/Mortgage", "Monthly rent or mortgage expenses"),
-    ("Subscriptions", "Subscriptions of all kinds"),
-    ("Uncategorized", "Expenses that do not fall under any other category")
+    ("Groceries","Food and household products"),
+    ("Restaurants","Food and drinks"),
+    ("Fuel","Car gas"),
+    ("Hotels","Staying expenses"),
+    ("Entertainment","Movies, amusement parks, etc."),
+    ("Car maintenance","Oil changes, repairs, and other car-related expenses"),
+    ("Shopping","Leisure shopping expenses"),
+    ("Phone/Home Internet","Home internet and cellular bills"),
+    ("Lease/Auto Loan","Monthly car lease or auto loan payments"),
+    ("Rent/Mortgage","Monthly rent or mortgage expenses"),
+    ("Subscriptions","Subscriptions of all kinds"),
+    ("Uncategorized","Expenses that do not fall under any other category")
 ]
 
-conn.executemany(
-    "INSERT OR IGNORE INTO categories (name, description) VALUES (?, ?)",
-    categories
-)
 
-conn.commit()
-conn.close()
+expense_settings = {
+    "Groceries": {
+        "names": ["Walmart","Costco","Publix","Aldi","Target","Whole Foods"],
+        "min": 2500,
+        "max": 24000
+    },
+    "Restaurants": {
+        "names": ["Restaurant","Lunch","Dinner","Breakfast","Coffee shop","Fast food"],
+        "min": 1200,
+        "max": 18000
+    },
+    "Fuel": {
+        "names": ["Shell","Chevron","Exxon","BP","Circle K","Mobil"],
+        "min": 3500,
+        "max": 12000
+    },
+    "Hotels": {
+        "names": ["Hotel","Motel","Airbnb","Resort","Business hotel","Road hotel"],
+        "min": 8500,
+        "max": 65000
+    },
+    "Entertainment": {
+        "names": ["Movies","Theme park","Concert","Bowling","Museum","Gaming"],
+        "min": 1500,
+        "max": 30000
+    },
+    "Car maintenance": {
+        "names": ["Oil change","Tires","Car wash","Repair","Brake service","Maintenance"],
+        "min": 2500,
+        "max": 95000
+    },
+    "Shopping": {
+        "names": ["Amazon","Target","Mall","Clothing","Electronics","Online shopping"],
+        "min": 1500,
+        "max": 45000
+    },
+    "Phone/Home Internet": {
+        "names": ["Verizon","T-Mobile","AT&T","Home Internet","Phone bill","Internet bill"],
+        "min": 4000,
+        "max": 22000
+    },
+    "Lease/Auto Loan": {
+        "names": ["Auto loan","Lease payment","Vehicle payment","Car financing"],
+        "min": 35000,
+        "max": 95000
+    },
+    "Rent/Mortgage": {
+        "names": ["Rent payment","Mortgage payment","Housing payment"],
+        "min": 90000,
+        "max": 320000
+    },
+    "Subscriptions": {
+        "names": ["Netflix","Spotify","YouTube","iCloud","Software","Streaming"],
+        "min": 499,
+        "max": 6000
+    },
+    "Uncategorized": {
+        "names": ["Miscellaneous","Other expense","Cash expense","Unknown purchase","General expense"],
+        "min": 500,
+        "max": 25000
+    }
+}
+
+
+def get_last_months(month_count):
+    today = date.today()
+    months = []
+    year = today.year
+    month = today.month
+    for _ in range(month_count):
+        months.append((year,month))
+        month -= 1
+        if month == 0:
+            month = 12
+            year -= 1
+    months.reverse()
+    return months
+
+
+def seed_database():
+    init_db()
+    random.seed(42)
+    conn = get_connection()
+    conn.executemany(
+        "INSERT OR IGNORE INTO categories (name,description) VALUES (?,?)",
+        categories
+    )
+    conn.commit()
+    category_rows = conn.execute(
+        "SELECT id,name FROM categories"
+    ).fetchall()
+    category_ids = {name: category_id for category_id,name in category_rows}
+    months = get_last_months(36)
+    today = date.today()
+    created = 0
+    skipped = 0
+    for category_name,_ in categories:
+        category_id = category_ids[category_name]
+        settings = expense_settings[category_name]
+        for year,month in months:
+            for expense_number in range(1,11):
+                # Makes repeated seed runs safe.
+                seed_marker = f"SEED:{category_name}:{year}-{month:02d}:{expense_number:02d}"
+                existing = conn.execute(
+                    "SELECT id FROM expenses WHERE description = ?",
+                    (seed_marker,)
+                ).fetchone()
+                if existing:
+                    skipped += 1
+                    continue
+                expense_name = random.choice(settings["names"])
+                amount_cents = random.randint(settings["min"],settings["max"])
+                day = random.randint(1,28)
+                if year == today.year and month == today.month:
+                    day = random.randint(1,today.day)
+                expense_date = f"{year}-{month:02d}-{day:02d}"
+                conn.execute(
+                    """
+                    INSERT INTO expenses
+                    (category_id,name,currency,amount_cents,date,description)
+                    VALUES (?,?,?,?,?,?)
+                    """,
+                    (category_id,expense_name,"USD",amount_cents,expense_date,seed_marker)
+                )
+                created += 1
+    conn.commit()
+    conn.close()
+    print("Seed completed successfully")
+    print(f"Categories: {len(categories)}")
+    print(f"Expenses created: {created}")
+    print(f"Expenses skipped: {skipped}")
+    print(f"Expected seed expenses: {len(categories) * 10 * 36}")
+
+
+if __name__ == "__main__":
+    seed_database()
