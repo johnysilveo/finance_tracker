@@ -463,10 +463,10 @@ The console accepts flexible separators.
 Examples:
 
 ```text
-3/5/26
-3-5-26
-3.5.26
-3'5'26
+26-3-5
+26/3/5
+26.3.5
+26'3'5
 ```
 
 Normalized UI result:
@@ -530,7 +530,7 @@ The service performs:
 - category totals;
 - average calculations.
 
-The current report system contains 11 report modes plus the Custom Report Builder.
+The current report system contains 13 report modes plus the Custom Report Builder.
 
 Supported report functionality includes:
 

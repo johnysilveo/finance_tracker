@@ -31,7 +31,7 @@ def format_export_date(value: str | None) -> str:
     if not value:
         return ""
     try:
-        return datetime.strptime(value,"%Y-%m-%d").strftime("%m/%d/%Y")
+        return datetime.strptime(value,"%Y-%m-%d").strftime("%Y-%m-%d")
     except ValueError:
         return value
 

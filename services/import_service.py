@@ -27,21 +27,11 @@ def find_category_id(row: dict) -> int:
 
 def normalize_import_date(value: str) -> str:
     value = value.strip()
-    if re.fullmatch(r"\d{4}-\d{1,2}-\d{1,2}",value):
-        parsed_date = datetime.strptime(value,"%Y-%m-%d")
-        return parsed_date.strftime("%m/%d/%Y")
-    value = re.sub(r"[.,'\-]+","/",value)
-    parts = value.split("/")
-    if len(parts) != 3:
-        raise ValueError("Invalid date")
-    month,day,year = parts
-    if not month.isdigit() or not day.isdigit() or not year.isdigit():
-        raise ValueError("Invalid date")
-    if len(year) <= 2:
-        year = str(2000 + int(year))
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}",value):
+        raise ValueError("Date must be in format YYYY-MM-DD")
     try:
-        parsed_date = datetime(int(year),int(month),int(day))
-        return parsed_date.strftime("%m/%d/%Y")
+        parsed_date = datetime.strptime(value,"%Y-%m-%d")
+        return parsed_date.strftime("%Y-%m-%d")
     except ValueError:
         raise ValueError("Invalid date")
 

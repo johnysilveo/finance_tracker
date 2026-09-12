@@ -463,10 +463,7 @@ CLI приймає різні separators.
 Приклади:
 
 ```text
-3/5/26
-3-5-26
-3.5.26
-3'5'26
+26-3-5
 ```
 
 Нормалізований формат у CLI:
@@ -530,7 +527,7 @@ Service виконує:
 - category totals;
 - average calculations.
 
-Поточний report system містить 11 report modes плюс Custom Report Builder.
+Поточний report system містить 13 report modes плюс Custom Report Builder.
 
 Підтримуються такі типи аналітики:
 
