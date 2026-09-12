@@ -24,8 +24,10 @@ def report_menu():
         print(centered("9. Totals by all categories"))
         print(centered("10. Top category"))
         print(centered("11. Average daily expense"))
-        print(centered("12. Build custom report"))
-        print(centered("13. Export last report"))
+        print(centered("12. Maximum expense for each category"))
+        print(centered("13. Minimum expense for each category"))
+        print(centered("14. Build custom report"))
+        print(centered("15. Export last report"))
         print(centered("0. Back"))
         print(centered())
         print(border())
@@ -57,8 +59,12 @@ def report_menu():
         elif choice == "11":
             average_daily_expense()
         elif choice == "12":
-            build_custom_report()
+            max_expenses_for_each_category()
         elif choice == "13":
+            min_expenses_for_each_category()
+        elif choice == "14":
+            build_custom_report()
+        elif choice == "15":
             export_last_report()
         else:
             print(centered("INVALID OPTION"))
@@ -147,11 +153,11 @@ def expenses_by_date_range():
     while step < 2:
         try:
             if step == 0:
-                start_date = get_valid_date("Enter start date MM/DD/YYYY")
+                start_date = get_valid_date("Enter start date YYYY-MM-DD")
             elif step == 1:
-                end_date = get_valid_date("Enter end date MM/DD/YYYY")
-                parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
-                parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+                end_date = get_valid_date("Enter end date YYYY-MM-DD")
+                parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+                parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
                 if parsed_start_date > parsed_end_date:
                     print(centered())
                     print(centered("Error: Start date must be before end date"))
@@ -177,8 +183,8 @@ def expenses_by_date_range():
         expenses = report_service.get_expenses_by_date_range(start_date,end_date)
         for expense in expenses:
             amount = expense.amount_cents / 100
-            # Database stores YYYY-MM-DD, but CLI displays MM/DD/YYYY.
-            display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+            # Database stores YYYY-MM-DD, but CLI displays YYYY-MM-DD.
+            display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
             print(centered(f"ID: {expense.id}. {expense.name} - {amount:.2f} {expense.currency} - {display_date}"))
         print(centered())
     except ValueError as error:
@@ -196,11 +202,11 @@ def max_expense_in_period():
     while step < 3:
         try:
             if step == 0:
-                start_date = get_valid_date("Enter start date MM/DD/YYYY")
+                start_date = get_valid_date("Enter start date YYYY-MM-DD")
             elif step == 1:
-                end_date = get_valid_date("Enter end date MM/DD/YYYY")
-                parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
-                parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+                end_date = get_valid_date("Enter end date YYYY-MM-DD")
+                parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+                parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
                 if parsed_start_date > parsed_end_date:
                     print(centered())
                     print(centered("Error: Start date must be before end date"))
@@ -228,7 +234,7 @@ def max_expense_in_period():
         # All expenses are converted before the maximum value is selected.
         expense = report_service.get_max_expense_in_period(start_date,end_date,target_currency)
         amount = expense.amount_cents / 100
-        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
         print(centered(f"ID: {expense.id}. {expense.name} - {amount:.2f} {expense.currency} - {display_date}"))
         print(centered())
     except (ValueError,ConnectionError) as error:
@@ -246,11 +252,11 @@ def min_expense_in_period():
     while step < 3:
         try:
             if step == 0:
-                start_date = get_valid_date("Enter start date MM/DD/YYYY")
+                start_date = get_valid_date("Enter start date YYYY-MM-DD")
             elif step == 1:
-                end_date = get_valid_date("Enter end date MM/DD/YYYY")
-                parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
-                parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+                end_date = get_valid_date("Enter end date YYYY-MM-DD")
+                parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+                parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
                 if parsed_start_date > parsed_end_date:
                     print(centered())
                     print(centered("Error: Start date must be before end date"))
@@ -278,7 +284,7 @@ def min_expense_in_period():
         # All expenses are converted before the minimum value is selected.
         expense = report_service.get_min_expense_in_period(start_date,end_date,target_currency)
         amount = expense.amount_cents / 100
-        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
         print(centered(f"ID: {expense.id}. {expense.name} - {amount:.2f} {expense.currency} - {display_date}"))
         print(centered())
     except (ValueError,ConnectionError) as error:
@@ -328,7 +334,7 @@ def max_expense_by_category():
         # Service converts the expenses before comparing their values.
         expense = report_service.get_max_expense_by_category(category_id,target_currency)
         amount = expense.amount_cents / 100
-        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
         print(centered(f"ID: {expense.id}. {expense.name} - {amount:.2f} {expense.currency} - {display_date}"))
         print(centered())
     except (ValueError,ConnectionError) as error:
@@ -378,7 +384,7 @@ def min_expense_by_category():
         # Service converts the expenses before comparing their values.
         expense = report_service.get_min_expense_by_category(category_id,target_currency)
         amount = expense.amount_cents / 100
-        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
         print(centered(f"ID: {expense.id}. {expense.name} - {amount:.2f} {expense.currency} - {display_date}"))
         print(centered())
     except (ValueError,ConnectionError) as error:
@@ -536,7 +542,62 @@ def average_daily_expense():
         print(centered())
     print(border())
 
+def max_expenses_for_each_category():
+    show_header("MAX EXPENSE FOR EACH CATEGORY")
+    print(border())
+    print(centered())
+    try:
+        target_currency = get_valid_currency("Enter report currency USD/EUR/UAH")
+        print(centered())
+    except (PreviousField,CancelOperation):
+        print(centered())
+        print(centered("Report cancelled"))
+        print(centered())
+        print(border())
+        return
+    try:
+        results = report_service.get_max_expenses_by_all_categories(target_currency)
+        if not results:
+            print(centered("No expenses found"))
+        else:
+            for category_id,expense in results:
+                category = category_service.get_category_by_id(category_id)
+                amount = expense.amount_cents / 100
+                print(centered(f"{category.name}: {expense.name} - {amount:.2f} {expense.currency} - {expense.date}"))
+        print(centered())
+    except (ValueError,ConnectionError) as error:
+        print(centered(f"Error: {error}"))
+        print(centered())
+    print(border())
 
+
+def min_expenses_for_each_category():
+    show_header("MIN EXPENSE FOR EACH CATEGORY")
+    print(border())
+    print(centered())
+    try:
+        target_currency = get_valid_currency("Enter report currency USD/EUR/UAH")
+        print(centered())
+    except (PreviousField,CancelOperation):
+        print(centered())
+        print(centered("Report cancelled"))
+        print(centered())
+        print(border())
+        return
+    try:
+        results = report_service.get_min_expenses_by_all_categories(target_currency)
+        if not results:
+            print(centered("No expenses found"))
+        else:
+            for category_id,expense in results:
+                category = category_service.get_category_by_id(category_id)
+                amount = expense.amount_cents / 100
+                print(centered(f"{category.name}: {expense.name} - {amount:.2f} {expense.currency} - {expense.date}"))
+        print(centered())
+    except (ValueError,ConnectionError) as error:
+        print(centered(f"Error: {error}"))
+        print(centered())
+    print(border())
 
 def export_last_report():
     show_header("EXPORT LAST REPORT")

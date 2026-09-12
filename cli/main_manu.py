@@ -32,4 +32,4 @@ def main_menu():
         elif choice == "4":
             import_menu()
         else:
-            print(centered("FUCKING INVALID!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
+            print(centered("INVALID INPUT"))

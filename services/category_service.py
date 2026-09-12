@@ -1,5 +1,5 @@
 from models.category import Category
-from repositories import category_repository
+from repositories import category_repository, expense_repository
 from utils.logger import logger
 
 
@@ -65,6 +65,11 @@ def update_category(category_id: int, name: str, description: str | None = None)
 def delete_category(category_id: int) -> None:
     if category_id <= 0:
         raise ValueError('Category id must be greater than zero')
+    existing_category = category_repository.get_category_by_id(category_id)
+    if existing_category is None:
+        raise ValueError('Category does not exist')
+    if expense_repository.has_active_expenses_by_category(category_id):
+        raise ValueError('Cannot delete category with active expenses')
     deleted = category_repository.soft_delete_category(category_id)
     if not deleted:
         raise ValueError('Category does not exist')

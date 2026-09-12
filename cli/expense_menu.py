@@ -37,7 +37,7 @@ def expense_menu():
         elif choice == "7":
             show_deleted_expenses()
         else:
-            print(centered("INVALID!!!!!!!!!!!!!!!!!!!"))
+            print(centered("INVALID INPUT"))
         wait_for_enter()
 
 
@@ -70,7 +70,7 @@ def add_expense():
             elif step == 4:
                 currency = get_valid_currency("Enter currency just hit 'ENTER' for (default USD)","USD")
             elif step == 5:
-                date = get_valid_date("Enter date MM/DD/YYYY")
+                date = get_valid_date("Enter date YYYY-MM-DD")
             step += 1
             print(centered())
         except PreviousField:
@@ -114,7 +114,7 @@ def show_all_expenses():
     else:
         for expense in expenses:
             amount = expense.amount_cents / 100
-            display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+            display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
             try:
                 category = category_service.get_category_by_id(expense.category_id)
                 category_name = category.name
@@ -153,7 +153,7 @@ def update_expense():
             if step == 0:
                 expense_id = get_valid_id("Enter expense ID",expense_service.get_expense_by_id)
                 existing_expense = expense_service.get_expense_by_id(expense_id)
-                current_date = datetime.strptime(existing_expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+                current_date = datetime.strptime(existing_expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
                 print(centered())
                 print(centered(f"Current name: {existing_expense.name}"))
                 print(centered(f"Current date: {current_date}"))
@@ -237,7 +237,7 @@ def delete_expense():
             if step == 0:
                 expense_id = get_valid_id("Enter expense ID",expense_service.get_expense_by_id)
                 existing_expense = expense_service.get_expense_by_id(expense_id)
-                current_date = datetime.strptime(existing_expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+                current_date = datetime.strptime(existing_expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
                 print(centered())
                 print(centered(f"Name: {existing_expense.name}"))
                 print(centered(f"Date: {current_date}"))
@@ -313,7 +313,7 @@ def restore_expense():
                     print(centered("Error: Deleted expense not found"))
                     print(centered())
                     continue
-                current_date = datetime.strptime(existing_expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+                current_date = datetime.strptime(existing_expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
                 print(centered())
                 print(centered(f"Name: {existing_expense.name}"))
                 print(centered(f"Date: {current_date}"))
@@ -390,7 +390,7 @@ def show_expense_details():
     except ValueError:
         category_name = "Deleted category"
     amount = existing_expense.amount_cents / 100
-    display_date = datetime.strptime(existing_expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+    display_date = datetime.strptime(existing_expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
     print(centered())
     print(centered(f"ID: {existing_expense.id}"))
     print(centered(f"Name: {existing_expense.name}"))
@@ -414,7 +414,7 @@ def show_deleted_expenses():
         return
     for expense in expenses:
         amount = expense.amount_cents / 100
-        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
         print(centered(
             f"ID: {expense.id}. Name: {expense.name} - "
             f"Amount: {amount:.2f} {expense.currency}"

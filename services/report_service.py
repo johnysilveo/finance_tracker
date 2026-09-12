@@ -54,12 +54,12 @@ def get_expenses_by_name(name: str) -> list[Expense]:
 
 def get_expenses_by_date_range(start_date: str, end_date: str) -> list[Expense]:
 
-    # Convert user-friendly MM/DD/YYYY dates into datetime objects for validation.
+    # Convert user-friendly YYYY-MM-DD dates into datetime objects for validation.
     try:
-        parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
-        parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+        parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+        parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
     except ValueError:
-        raise ValueError("Dates must be in format MM/DD/YYYY")
+        raise ValueError("Dates must be in format YYYY-MM-DD")
 
     # Prevent an invalid period where the start date is after the end date.
 
@@ -85,10 +85,10 @@ def get_max_expense_in_period(start_date: str, end_date: str, target_currency: s
 
     # Validate and convert the entered date range.
     try:
-        parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
-        parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+        parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+        parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
     except ValueError:
-        raise ValueError("Dates must be in format MM/DD/YYYY")
+        raise ValueError("Dates must be in format YYYY-MM-DD")
     if parsed_start_date > parsed_end_date:
         raise ValueError("Start date must be before end date")
     start_date = parsed_start_date.strftime("%Y-%m-%d")
@@ -125,10 +125,10 @@ def get_min_expense_in_period(start_date: str, end_date: str, target_currency: s
     # Validate and convert the entered date range.
 
     try:
-        parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
-        parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+        parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+        parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
     except ValueError:
-        raise ValueError("Dates must be in format MM/DD/YYYY")
+        raise ValueError("Dates must be in format YYYY-MM-DD")
     if parsed_start_date > parsed_end_date:
         raise ValueError("Start date must be before end date")
     start_date = parsed_start_date.strftime("%Y-%m-%d")
@@ -224,6 +224,43 @@ def get_min_expense_by_category(category_id: int, target_currency: str) -> Expen
 
 
 # Calculates the total spending for one category in the selected report currency.
+
+def get_max_expenses_by_all_categories(target_currency: str) -> list[tuple[int,Expense]]:
+    target_currency = target_currency.strip().upper()
+    if target_currency not in CURRENCY_CODES:
+        raise ValueError("Unsupported report currency")
+    categories = category_repository.get_all_categories()
+    rates = get_currency_rates()
+    result = []
+    for category in categories:
+        expenses = report_repository.get_expenses_by_category(category.id)
+        if not expenses:
+            continue
+        converted_expenses = []
+        for expense in expenses:
+            converted_expenses.append(_convert_expense_for_report(expense,target_currency,rates))
+        max_expense = max(converted_expenses,key=lambda expense: expense.amount_cents)
+        result.append((category.id,max_expense))
+    return result
+
+
+def get_min_expenses_by_all_categories(target_currency: str) -> list[tuple[int,Expense]]:
+    target_currency = target_currency.strip().upper()
+    if target_currency not in CURRENCY_CODES:
+        raise ValueError("Unsupported report currency")
+    categories = category_repository.get_all_categories()
+    rates = get_currency_rates()
+    result = []
+    for category in categories:
+        expenses = report_repository.get_expenses_by_category(category.id)
+        if not expenses:
+            continue
+        converted_expenses = []
+        for expense in expenses:
+            converted_expenses.append(_convert_expense_for_report(expense,target_currency,rates))
+        min_expense = min(converted_expenses,key=lambda expense: expense.amount_cents)
+        result.append((category.id,min_expense))
+    return result
 
 def get_total_by_category(category_id: int, target_currency: str) -> int:
 

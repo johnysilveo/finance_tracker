@@ -11,10 +11,10 @@ def create_expense(name: str, amount_cents: int, date: str, category_id: int, de
     if description is not None:
         description = description.strip()
     try:
-        parsed_date = datetime.strptime(date,"%m/%d/%Y")
+        parsed_date = datetime.strptime(date, "%Y-%m-%d")
         date = parsed_date.strftime("%Y-%m-%d")
     except ValueError:
-        raise ValueError("Expense date must be in format MM/DD/YYYY")
+        raise ValueError("Expense date must be in format YYYY-MM-DD")
     if amount_cents <= 0:
         raise ValueError('Amount cents cannot be negative or zero')
     currency = currency.strip().upper()
@@ -66,10 +66,10 @@ def update_expense(name: str, expense_id: int, amount_cents: int, date: str, cat
     if description is not None:
         description = description.strip()
     try:
-        parsed_date = datetime.strptime(date,"%m/%d/%Y")
+        parsed_date = datetime.strptime(date, "%Y-%m-%d")
         date = parsed_date.strftime("%Y-%m-%d")
     except ValueError:
-        raise ValueError("Expense date must be in format MM/DD/YYYY")
+        raise ValueError("Expense date must be in format YYYY-MM-DD")
     if amount_cents <= 0:
         raise ValueError('Amount cents cannot be negative or zero')
     currency = currency.strip().upper()

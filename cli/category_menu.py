@@ -37,7 +37,7 @@ def category_menu():
         elif choice == "7":
             show_deleted_categories()
         else:
-            print(centered("INVALID INPUT!!!!!!!!!!!!!!!!!!!!"))
+            print(centered("INVALID INPUT"))
 
         wait_for_enter()
 

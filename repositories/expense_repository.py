@@ -181,3 +181,20 @@ def get_deleted_expenses() -> list[Expense]:
         return expenses
     finally:
         connection.close()
+
+
+def has_active_expenses_by_category(category_id: int) -> bool:
+    connection = get_connection()
+    try:
+        cursor = connection.execute(
+            """
+            SELECT 1
+            FROM expenses
+            WHERE category_id = ? AND is_deleted = 0
+            LIMIT 1
+            """,
+            (category_id,)
+        )
+        return cursor.fetchone() is not None
+    finally:
+        connection.close()

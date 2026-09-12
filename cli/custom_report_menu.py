@@ -16,7 +16,9 @@ REPORT_OPTIONS = {
     8: "Total by category",
     9: "Totals by all categories",
     10: "Top category",
-    11: "Average daily expense"
+    11: "Average daily expense",
+    12: "Maximum expense for each category",
+    13: "Minimum expense for each category"
 }
 
 
@@ -66,11 +68,11 @@ def get_report_date_range() -> tuple[str,str]:
     while step < 2:
         try:
             if step == 0:
-                start_date = get_valid_date("Enter start date MM/DD/YYYY")
+                start_date = get_valid_date("Enter start date YYYY-MM-DD")
             elif step == 1:
-                end_date = get_valid_date("Enter end date MM/DD/YYYY")
-                parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
-                parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+                end_date = get_valid_date("Enter end date YYYY-MM-DD")
+                parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+                parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
                 if parsed_start_date > parsed_end_date:
                     print(centered())
                     print(centered("Error: Start date must be before end date"))
@@ -130,7 +132,7 @@ def build_report_section(option: int, target_currency: str) -> dict:
         for expense in expenses:
             data.append(expense_to_data(expense))
             amount = expense.amount_cents / 100
-            display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+            display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
             lines.append(f"{expense.name} - {amount:.2f} {expense.currency} - {display_date}")
         return {
             "title": "Expenses by date range",
@@ -144,7 +146,7 @@ def build_report_section(option: int, target_currency: str) -> dict:
         expense = report_service.get_max_expense_in_period(start_date,end_date,target_currency)
         data = expense_to_data(expense)
         amount = expense.amount_cents / 100
-        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
         return {
             "title": "Maximum expense in period",
             "parameters": {"start_date": start_date,"end_date": end_date,"currency": target_currency},
@@ -157,7 +159,7 @@ def build_report_section(option: int, target_currency: str) -> dict:
         expense = report_service.get_min_expense_in_period(start_date,end_date,target_currency)
         data = expense_to_data(expense)
         amount = expense.amount_cents / 100
-        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%m/%d/%Y")
+        display_date = datetime.strptime(expense.date,"%Y-%m-%d").strftime("%Y-%m-%d")
         return {
             "title": "Minimum expense in period",
             "parameters": {"start_date": start_date,"end_date": end_date,"currency": target_currency},
@@ -259,6 +261,38 @@ def build_report_section(option: int, target_currency: str) -> dict:
             "lines": [f"Average daily expense - {average:.2f} {target_currency}"]
         }
 
+    elif option == 12:
+        results = report_service.get_max_expenses_by_all_categories(target_currency)
+        data = []
+        lines = []
+        for category_id,expense in results:
+            category = category_service.get_category_by_id(category_id)
+            data.append(expense_to_data(expense))
+            amount = expense.amount_cents / 100
+            lines.append(f"{category.name}: {expense.name} - {amount:.2f} {expense.currency}")
+        return {
+            "title": "Maximum expense for each category",
+            "parameters": {"currency": target_currency},
+            "data": data,
+            "lines": lines
+        }
+
+    elif option == 13:
+        results = report_service.get_min_expenses_by_all_categories(target_currency)
+        data = []
+        lines = []
+        for category_id,expense in results:
+            category = category_service.get_category_by_id(category_id)
+            data.append(expense_to_data(expense))
+            amount = expense.amount_cents / 100
+            lines.append(f"{category.name}: {expense.name} - {amount:.2f} {expense.currency}")
+        return {
+            "title": "Minimum expense for each category",
+            "parameters": {"currency": target_currency},
+            "data": data,
+            "lines": lines
+        }
+
     raise ValueError("Invalid report option")
 
 
@@ -292,7 +326,7 @@ def build_custom_report():
     while True:
         try:
             if step == 0:
-                section_count = get_valid_number("How many report sections 1-11", 1, 11)
+                section_count = get_valid_number("How many report sections 1-13", 1, 13)
                 if section_count == len(REPORT_OPTIONS):
                     # If all sections are requested, select every report automatically.
                     selected_options = list(REPORT_OPTIONS.keys())
@@ -307,7 +341,7 @@ def build_custom_report():
                 continue
             if not all_sections_selected and step <= section_count:
                 section_number = step
-                option = get_valid_number(f"Choose report section {section_number}", 1, 11)
+                option = get_valid_number(f"Choose report section {section_number}", 1, 13)
                 option_index = section_number - 1
                 if option_index < len(selected_options):
                     selected_options[option_index] = option

@@ -90,29 +90,17 @@ def get_valid_currency(prompt: str, default: str | None=None) -> str:
             continue
         return currency
 
-
 def get_valid_date(prompt: str, default: str | None=None) -> str:
     while True:
         date = get_input(prompt)
         if not date and default is not None:
             return default
-        date = re.sub(r"[.,'\-]+","/",date)
-        parts = date.split("/")
-        if len(parts) != 3:
-            print(centered("Error: Enter month, day and year"))
-            continue
-        month,day,year = parts
-        if not month.isdigit() or not day.isdigit() or not year.isdigit():
-            print(centered("Error: Date must contain numbers"))
-            continue
-        if len(year) <= 2:
-            year = str(2000 + int(year))
-        if len(year) != 4:
-            print(centered("Error: Year must contain 1, 2 or 4 digits"))
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}",date):
+            print(centered("Error: Date must be in format YYYY-MM-DD"))
             continue
         try:
-            parsed_date = datetime(int(year),int(month),int(day))
-            return parsed_date.strftime("%m/%d/%Y")
+            datetime.strptime(date,"%Y-%m-%d")
+            return date
         except ValueError:
             print(centered("Error: Invalid date"))
 
@@ -121,11 +109,47 @@ def get_valid_date_range(start_prompt: str, end_prompt: str) -> tuple[str,str]:
     while True:
         start_date = get_valid_date(start_prompt)
         end_date = get_valid_date(end_prompt)
-        parsed_start_date = datetime.strptime(start_date,"%m/%d/%Y")
-        parsed_end_date = datetime.strptime(end_date,"%m/%d/%Y")
+        parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+        parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
         if parsed_start_date <= parsed_end_date:
             return start_date,end_date
         print(centered("Error: Start date must be before end date"))
+
+# def get_valid_date(prompt: str, default: str | None=None) -> str:
+#     while True:
+#         date = get_input(prompt)
+#         if not date and default is not None:
+#             return default
+#         date = re.sub(r"[.,'\-]+","/",date)
+#         parts = date.split("/")
+#         if len(parts) != 3:
+#             print(centered("Error: Enter month, day and year"))
+#             continue
+#         month,day,year = parts
+#         if not month.isdigit() or not day.isdigit() or not year.isdigit():
+#             print(centered("Error: Date must contain numbers"))
+#             continue
+#         if len(year) <= 2:
+#             year = str(2000 + int(year))
+#         if len(year) != 4:
+#             print(centered("Error: Year must contain 1, 2 or 4 digits"))
+#             continue
+#         try:
+#             parsed_date = datetime(int(year),int(month),int(day))
+#             return parsed_date.strftime("%Y-%m-%d")
+#         except ValueError:
+#             print(centered("Error: Invalid date"))
+#
+#
+# def get_valid_date_range(start_prompt: str, end_prompt: str) -> tuple[str,str]:
+#     while True:
+#         start_date = get_valid_date(start_prompt)
+#         end_date = get_valid_date(end_prompt)
+#         parsed_start_date = datetime.strptime(start_date,"%Y-%m-%d")
+#         parsed_end_date = datetime.strptime(end_date,"%Y-%m-%d")
+#         if parsed_start_date <= parsed_end_date:
+#             return start_date,end_date
+#         print(centered("Error: Start date must be before end date"))
 
 
 
